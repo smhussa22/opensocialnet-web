@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "proto:gen": "pbjs -t static-module -w es6 -o lib/proto/signaling.js proto/signaling.proto && pbts -o lib/proto/signaling.d.ts lib/proto/signaling.js"
   },
   "dependencies": {
     "next": "16.2.6",
+    "protobufjs": "^8.4.2",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -16,6 +18,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "protobufjs-cli": "^2.4.2",
     "typescript": "^5"
   }
 }
