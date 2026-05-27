@@ -21,6 +21,7 @@ export type UseGateway = {
   ready: Ready | null;
   messages: ChatMessageEvent[];
   errors: string[];
+  lastHistoryCount: number | null;
   connect: (userId: string, authToken?: string) => void;
   disconnect: () => void;
   sendMessage: (channelId: string, content: string) => void;
@@ -37,6 +38,7 @@ export function useGateway(url?: string): UseGateway {
   const [ready, setReady] = useState<Ready | null>(null);
   const [messages, setMessages] = useState<ChatMessageEvent[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [lastHistoryCount, setLastHistoryCount] = useState<number | null>(null);
 
   const teardown = useCallback(() => {
     const client = clientRef.current;
@@ -51,6 +53,7 @@ export function useGateway(url?: string): UseGateway {
       setReady(null);
       setMessages([]);
       setErrors([]);
+      setLastHistoryCount(null);
 
       const client = new GatewayClient({
         url,
@@ -67,6 +70,7 @@ export function useGateway(url?: string): UseGateway {
           },
           onHistoryResponse: (resp) => {
             const msgs = resp.msgs ?? [];
+            setLastHistoryCount(msgs.length);
             if (msgs.length === 0) return;
             // Prepend older messages (history is older-than-cursor).
             setMessages((prev) => [...msgs, ...prev]);
@@ -120,6 +124,7 @@ export function useGateway(url?: string): UseGateway {
     ready,
     messages,
     errors,
+    lastHistoryCount,
     connect,
     disconnect,
     sendMessage,

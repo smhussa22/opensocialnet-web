@@ -129,6 +129,32 @@ export default function Home() {
     gw.fetchHistory(ch, undefined, 50);
   };
 
+  // Find the lexicographically smallest messageId across all loaded messages.
+  // TimeUUIDs are time-sortable as strings, so the min string == the oldest.
+  // We scan the full array (rather than reading messages[0]) because history
+  // is prepended while live messages are appended, so order is not guaranteed.
+  const oldestMessageId = (() => {
+    let oldest: string | undefined;
+    for (const m of gw.messages) {
+      const id = m.messageId ?? undefined;
+      if (!id) continue;
+      if (oldest === undefined || id < oldest) oldest = id;
+    }
+    return oldest;
+  })();
+
+  const canLoadOlder = isConnected && oldestMessageId !== undefined;
+
+  const handleLoadOlder = () => {
+    if (!canLoadOlder) return;
+    const ch = channelId.trim();
+    if (!ch) return;
+    gw.fetchHistory(ch, oldestMessageId, 50);
+  };
+
+  const lastHistoryCount = (gw as { lastHistoryCount?: number | null })
+    .lastHistoryCount ?? null;
+
   return (
     <div style={styles.page}>
       <h1 style={styles.h1}>OpenSocialNet — Gateway Test Client</h1>
@@ -195,7 +221,19 @@ export default function Home() {
           >
             Fetch History
           </button>
+          <button
+            style={canLoadOlder ? styles.secondary : styles.buttonDisabled}
+            disabled={!canLoadOlder}
+            onClick={handleLoadOlder}
+          >
+            Load Older
+          </button>
         </div>
+        {lastHistoryCount !== null ? (
+          <div style={{ ...styles.label, marginTop: 6 }}>
+            Last fetch: {lastHistoryCount} messages
+          </div>
+        ) : null}
         <div style={{ ...styles.row, marginTop: 8 }}>
           <input
             style={{ ...styles.input, flex: 1, minWidth: 260 }}
