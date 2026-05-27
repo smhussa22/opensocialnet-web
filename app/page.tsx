@@ -101,16 +101,17 @@ type Long = { toString(): string };
 export default function Home() {
   const gw = useGateway();
   const [userId, setUserId] = useState("alice");
+  const [authToken, setAuthToken] = useState("");
   const [channelId, setChannelId] = useState("general");
   const [draft, setDraft] = useState("");
 
   const isConnected = gw.status === "connected";
   const isConnecting = gw.status === "connecting";
-  const canConnect = !isConnected && !isConnecting && userId.trim().length > 0;
+  const canConnect = !isConnected && !isConnecting && userId.trim().length > 0 && authToken.trim().length > 0;
 
   const handleConnect = () => {
     if (!canConnect) return;
-    gw.connect(userId.trim());
+    gw.connect(userId.trim(), authToken.trim());
   };
 
   const handleSend = () => {
@@ -168,6 +169,14 @@ export default function Home() {
             onChange={(e) => setUserId(e.target.value)}
             disabled={isConnected || isConnecting}
             placeholder="user id"
+          />
+          <span style={styles.label}>auth_token</span>
+          <input
+            style={{ ...styles.input, ...styles.mono, minWidth: 360 }}
+            value={authToken}
+            onChange={(e) => setAuthToken(e.target.value)}
+            disabled={isConnected || isConnecting}
+            placeholder="hmac-sha256(secret, user_id) hex"
           />
           <button
             style={canConnect ? styles.button : styles.buttonDisabled}
